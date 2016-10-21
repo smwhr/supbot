@@ -25,16 +25,32 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 //CONTROLLERS
 
+$app->before(function(Request $request){
+  if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
+        $data = json_decode($request->getContent(), true);
+        $request->request->replace(is_array($data) ? $data : array());
+        $request->request->set('raw_json', $data);
+    }
+});
+
 $app->get('/webhook', function(Request $request) use ($app){
-    //?hup_mode=subscribe&hub_verify_token=valeur_secret&hub_challenge==1234566
+    //?hub_mode=subscribe&hub_verify_token=valeur_secret&hub_challenge==1234566
     if(   $request->query->get('hub_mode') === 'subscribe'
        && $request->query->get('hub_verify_token') === VALIDATION_TOKEN){
       return new Response($request->query->get('hub_challenge') );
     }else{
-      return new Response("SUBSCRIBE_FAILED");
+      return new Response("SUBSCRIBE_FAILED ".VALIDATION_TOKEN);
     }
 
     return new Response("ça marche !");
+});
+
+
+$app->post('/webhook', function(Request $request) use ($app){
+    $entry = $request->request->get("entry")[0];
+    $app['monolog']->addInfo(json_encode($entry));
+
+    return new Response("ok", 200);
 });
 
 
