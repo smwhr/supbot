@@ -25,7 +25,7 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 //SERVICES
 
-$app['messager'] = $app->protect(function($user_id, $message) use ($app){
+$app['messager'] = $app->protect(function($user_id, $message, $qrs = null) use ($app){
   $url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.PAGE_ACCESS_TOKEN;
   $ch = curl_init($url);
   curl_setopt($ch, CURLOPT_POST, 1);
@@ -33,6 +33,18 @@ $app['messager'] = $app->protect(function($user_id, $message) use ($app){
   curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 
   $container = ["recipient" => ["id" => $user_id], "message" => ["text" => $message]];
+
+  if($qrs){
+    $container["message"]["metadata"] = "DEFAULT_QUICK_REPLY";
+    $container["message"]["quick_replies"] = [];
+    foreach ($qrs as $pl => $text) {
+      $container["message"]["quick_replies"][] = [
+          "content_type" => "text",
+          "title" => substr($text,0,20),
+          "payload" => $pl
+      ];
+    }
+  }
 
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($container));
   $result = curl_exec($ch);
@@ -74,8 +86,17 @@ $app->post('/webhook', function(Request $request) use ($app){
 
     if($message){
       $messager = $app['messager'];
+
+      if($message == "chipolata"){
+        $result = $messager($user_id, "Fais ton choix : ", [
+                      "BLUE" => "Bleue",
+                      "RED" => "Rouge",
+          ]); 
+      }else{
+        $result = $messager($user_id, "Et ta mère ? Elle aime les salsifis ?");  
+      }
       
-      $result = $messager($user_id, "Et ta mère ? Elle aime les salsifis ?");
+      
       $app['monolog']->addInfo($result);
     }
 
