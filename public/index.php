@@ -23,6 +23,25 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 ));
 
 
+//SERVICES
+
+$app['messager'] = $app->protect(function($user_id, $message) use ($app){
+  $url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.PAGE_ACCESS_TOKEN;
+  $ch = curl_init($url);
+  curl_setopt($ch, CURLOPT_POST, 1);
+  curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+
+  $container = ["recipient" => ["id" => $user_id], "message" => ["text" => $message]];
+
+  curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($container));
+  $result = curl_exec($ch);
+  curl_close($ch);
+
+  return $result;
+});
+
+
 //CONTROLLERS
 
 $app->before(function(Request $request){
@@ -49,6 +68,16 @@ $app->get('/webhook', function(Request $request) use ($app){
 $app->post('/webhook', function(Request $request) use ($app){
     $entry = $request->request->get("entry")[0];
     $app['monolog']->addInfo(json_encode($entry));
+
+    $user_id = $entry['messaging'][0]['sender']['id'];
+    $message = $entry['messaging'][0]['message']['text'];
+
+    if($message){
+      $messager = $app['messager'];
+      
+      $result = $messager($user_id, "Et ta mère ? Elle aime les salsifis ?");
+      $app['monolog']->addInfo($result);
+    }
 
     return new Response("ok", 200);
 });
