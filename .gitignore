@@ -1,0 +1,7 @@
+vendor
+logs/all.log
+server.crt
+server.csr
+server.key
+server.key.backup
+composer.lock
