@@ -25,7 +25,7 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 //SERVICES
 
-$app['messager'] = $app->protect(function($user_id, $message, $qrs = null) use ($app){
+$app['messager'] = $app->protect(function($user_id, $message, $qrs = null, $image="null") use ($app){
   $url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.PAGE_ACCESS_TOKEN;
   $ch = curl_init($url);
   curl_setopt($ch, CURLOPT_POST, 1);
@@ -44,6 +44,13 @@ $app['messager'] = $app->protect(function($user_id, $message, $qrs = null) use (
           "payload" => $pl
       ];
     }
+  }
+
+  if($image){
+    $container["message"]["attachment"] = [
+      "type" => "image",
+      "payload" => ["url" => $image]
+    ];
   }
 
   curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($container));
@@ -91,7 +98,7 @@ $app->post('/webhook', function(Request $request) use ($app){
         $result = $messager($user_id, "Fais ton choix : ", [
                       "BLUE" => "Bleue",
                       "RED" => "Rouge",
-          ]); 
+          ], "http://i.imgur.com/fktskYH.jpg"); 
       }else{
         $result = $messager($user_id, "Et ta mère ? Elle aime les salsifis ?");  
       }
