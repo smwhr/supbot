@@ -25,7 +25,7 @@ $app->register(new Silex\Provider\MonologServiceProvider(), array(
 
 //SERVICES
 
-$app['messager'] = $app->protect(function($user_id, $message, $qrs = null, $image="null") use ($app){
+$app['messager'] = $app->protect(function($user_id, $message, $qrs = null, $image=null) use ($app){
   $url = 'https://graph.facebook.com/v2.6/me/messages?access_token='.PAGE_ACCESS_TOKEN;
   $ch = curl_init($url);
   curl_setopt($ch, CURLOPT_POST, 1);
