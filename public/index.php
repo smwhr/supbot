@@ -7,10 +7,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 // CONSTANTES
 
-define('APP_ID', get_env('APP_ID'));
-define('APP_SECRET', get_env('APP_SECRET'));
-define('PAGE_ACCESS_TOKEN', get_env('PAGE_ACCESS_TOKEN'));
-define('VALIDATION_TOKEN', get_env('VALIDATION_TOKEN'));
+define('APP_ID', getenv('APP_ID'));
+define('APP_SECRET', getenv('APP_SECRET'));
+define('PAGE_ACCESS_TOKEN', getenv('PAGE_ACCESS_TOKEN'));
+define('VALIDATION_TOKEN', getenv('VALIDATION_TOKEN'));
 
 //BOOTSTRAPING
 
