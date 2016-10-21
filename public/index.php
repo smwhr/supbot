@@ -47,6 +47,7 @@ $app['messager'] = $app->protect(function($user_id, $message, $qrs = null, $imag
   }
 
   if($image){
+    unset($container["message"]["text"]);
     $container["message"]["attachment"] = [
       "type" => "image",
       "payload" => ["url" => $image]
